@@ -100,37 +100,47 @@ export class classTest2 {
       return { status: 500, message: "Internal server error" };
     }
   }
+  async Delete_User_NoDB(UserID: string) {
+    try {
+      const user = this.userDatabase.get(UserID);
+
+      if (!user) {
+        return { status: 404, message: "User not found" };
+      }
+
+      this.userDatabase.delete(UserID);
+
+      return {
+        status: 200,
+        message: `User ${user.UserName} deleted successfully`
+      };
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      return { status: 500, message: "Internal server error" };
+    }
+  }
 
   // *************** Supabase ***************
   async GetUser(UserID: string) {
     try {
-      const { data, error } = await supabase
-        .from("user_details_view")
+      const data = supabase("user_details_view")
         .select(
-          `
-          UserName,
-          UserID,
-          Mail,
-          FirstName,
-          LastName,
-          PhoneNumber,
-          BirthDate,
-          Age,
-          Role,
-          Verify
-        `
+          "UserName",
+          "UserID",
+          "Mail",
+          "FirstName",
+          "LastName",
+          "PhoneNumber",
+          "BirthDate",
+          "Age",
+          "Role",
+          "Verify"
         )
-        .eq("UserID", UserID)
-        .single();
+        .where("UserID", UserID);
 
       if (!data) {
         console.log("No data found for UserID:", UserID);
         return { status: 404, message: "User not found" };
-      }
-
-      if (error) {
-        console.error("Error retrieving user:", error);
-        return { status: 500, message: "Internal server error" };
       }
 
       return data;
@@ -141,53 +151,39 @@ export class classTest2 {
   }
   async CreateUser(_Data: dataUser) {
     try {
-      const { data, error } = await supabase
-        .from("UserDetails")
-        .insert([
+      const data = await supabase("UserDetails").insert(
+        {
+          FirstName: _Data.FirstName,
+          LastName: _Data.LastName,
+          PhoneNumber: _Data.PhoneNumber,
+          BirthDate: _Data.BirthDate
+        },
+        ["id", "FirstName", "LastName", "PhoneNumber", "BirthDate"]
+      );
+
+      if (data) {
+        const GetUserDetail_ID = data[0].id;
+        const result = await supabase("Account").insert(
           {
-            FirstName: _Data.FirstName,
-            LastName: _Data.LastName,
-            PhoneNumber: _Data.PhoneNumber,
-            BirthDate: _Data.BirthDate
-          }
-        ])
-        .select("id, FirstName, LastName, PhoneNumber, BirthDate");
-      if (error) {
-        console.error("Error inserting data:", error);
-        return { status: 500, message: "Internal server error" };
-      }
-      const GetUserDetail_ID = data[0].id;
-      if (GetUserDetail_ID) {
-        const { data, error } = await supabase
-          .from("Account")
-          .insert([
-            {
-              UserName: _Data.UserName,
-              UserID: _Data.UserID,
-              Password: _Data.Password,
-              Mail: _Data.Mail,
-              Role: _Data.Role,
-              Verify: false,
-              UserDetail_ID: GetUserDetail_ID
-            }
-          ])
-          .select("UserName, UserID, Mail, Role, Verify, UserDetail_ID");
-        if (error) {
-          console.error("Error inserting data:", error);
-          return { status: 500, message: "Internal server error" };
-        } else {
+            UserName: _Data.UserName,
+            UserID: _Data.UserID,
+            Password: _Data.Password,
+            Mail: _Data.Mail,
+            Role: _Data.Role,
+            Verify: false,
+            UserDetail_ID: GetUserDetail_ID
+          },
+          "UserName"
+        );
+        if (result) {
           return {
             status: 200,
-            message: `User ${data[0].UserName} created successfully`
+            message: `User ${result[0].UserName} created successfully`
           };
+        } else {
+          return { status: 500, message: "Internal server error" };
         }
       }
-
-      if (error) {
-        throw error;
-      }
-
-      return data;
     } catch (error) {
       console.error("Error creating user:", error);
       return { status: 500, message: "Internal server error" };
@@ -195,40 +191,62 @@ export class classTest2 {
   }
   async Update_UserDetails(_Data: dataUser) {
     try {
-      const { data, error } = await supabase
-        .from("user_details_view")
+      const result = await supabase("Account")
         .select("UserDetail_ID")
-        .eq("UserID", _Data.UserID);
+        .where("UserID", _Data.UserID);
 
-      if (error) {
-        console.error("Error retrieving user:", error);
-        return { status: 500, message: "Internal server error" };
-      }
-      const UserDetail_ID = data[0].UserDetail_ID;
-      if (UserDetail_ID) {
-        const { data, error } = await supabase
-          .from("UserDetails")
+      if (result) {
+        const UserDetail_ID = result[0].UserDetail_ID;
+        const result2 = await supabase("UserDetails")
           .update({
             FirstName: _Data.FirstName,
             LastName: _Data.LastName,
             PhoneNumber: _Data.PhoneNumber,
             BirthDate: _Data.BirthDate
           })
-          .eq("id", UserDetail_ID)
-          .select("id, FirstName, LastName, PhoneNumber, BirthDate");
+          .where("id", UserDetail_ID);
 
-        if (error) {
-          console.error("Error updating user:", error);
+        if (result2) {
+          return {
+            status: 200,
+            message: ` updated successfully`
+          };
+        } else {
           return { status: 500, message: "Internal server error" };
         }
-
-        return {
-          status: 200,
-          message: ` updated successfully`
-        };
       }
     } catch (error) {
       console.error("Error updating user:", error);
+      return { status: 500, message: "Internal server error" };
+    }
+  }
+  async Delete_User(UserID: string) {
+    try {
+      const result = await supabase("Account")
+        .select("UserDetail_ID")
+        .where("UserID", UserID);
+
+      if (result) {
+        const UserDetail_ID = result[0].UserDetail_ID;
+        const result2 = await supabase("UserDetails")
+          .delete()
+          .where("id", UserDetail_ID);
+
+        const result3 = await supabase("Account")
+          .delete()
+          .where("UserID", UserID);
+
+        if (result2 && result3) {
+          return {
+            status: 200,
+            message: `User deleted successfully`
+          };
+        } else {
+          return { status: 500, message: "Internal server error" };
+        }
+      }
+    } catch (error) {
+      console.error("Error deleting user:", error);
       return { status: 500, message: "Internal server error" };
     }
   }

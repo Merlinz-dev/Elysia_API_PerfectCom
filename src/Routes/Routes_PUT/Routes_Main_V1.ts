@@ -14,7 +14,7 @@ export const MainRoutes_PUT = (app: Elysia) => {
         return result;
     }, {
         detail: {
-            tags: ['Api_Post'],
+            tags: ['Api_Put'],
             requestBody: {
                 description: "Example body for Update_UserDetails",
                 content: {
@@ -49,7 +49,7 @@ export const MainRoutes_PUT = (app: Elysia) => {
         return result;
     }, {
         detail: {
-            tags: ['Api_Post'],
+            tags: ['Api_Put'],
             requestBody: {
                 description: "Example body for Update_UserDetails_NoDB",
                 content: {

@@ -21,7 +21,7 @@ async function main() {
     MainRoutes_GET(app);
     MainRoutes_POST(app);
     MainRoutes_PUT(app);
-    // MainRoutes_DELETE(app);
+    MainRoutes_DELETE(app);
     app
       .use(
         swagger({

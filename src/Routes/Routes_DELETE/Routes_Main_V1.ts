@@ -1,39 +1,46 @@
 import { Elysia } from "elysia";
-import { jwt } from '@elysiajs/jwt'
-import { classMST, classEMS, classAuth } from "../../controller/controllerMain";
-import { data, dataAuth } from "../../DataType";
+import { jwt } from "@elysiajs/jwt";
+import { classTest2 } from "../../controller/controllerMain";
+import { data, dataUser } from "../../DataType";
 
 export const MainRoutes_DELETE = (app: Elysia) => {
-    app.use(jwt({
-        name: 'myJWTNamespace',
-        secret: Bun.env['TOKEN_SECRET'] || 'secret',
-        exp: '2h'
-    }))
-        .get('/profile', async ({ controllerMain_EMS, myJWTNamespace, set, cookie: { auth } }: { controllerMain_EMS: classEMS, body: dataAuth, myJWTNamespace: any, set: any, cookie: { auth: { value: string } } }) => {
-            const checkAuth = await myJWTNamespace.verify(auth.value)
-            if (!checkAuth) {
-                set.status = 401
-                return 'Unauthorized'
-            }
-            if(checkAuth.Center === 'AM-System'){
-                const Authdata: dataAuth = {
-                    UserID: checkAuth.Employee_ID,
-                    Password: '',
-                };
-                const profile = await controllerMain_EMS.GetEmployee(Authdata);
-                return `Hello ${profile[0].Employee_NameEN}`
-            }else {
-                set.status = 401
-                return 'No Permission'
-            }
-        }, {
-            detail: {
-                tags: ['Auth'],
-            },
-            type: 'json',
-        })
-        // .get('/Test_AMD_Oracle', async ({ controllerMain_AMD_ORACLE }: { controllerMain_AMD_ORACLE: classAMD_ORACLE}) => {
-        //     const result = await controllerMain_AMD_ORACLE.GetTest_AMD();
-        //     return result;
-        // })
-}
+  app
+    .use(
+      jwt({
+        name: "myJWTNamespace",
+        secret: Bun.env["TOKEN_SECRET"] || "secret",
+        exp: "2h"
+      })
+    )
+    .delete(
+      "/api/v1/Delete_User/:UserID",
+      ({
+        controllerMain_Test2,
+        params
+      }: {
+        controllerMain_Test2: classTest2;
+        params: { UserID: string };
+      }) => controllerMain_Test2.Delete_User(params.UserID),
+      {
+        detail: {
+          tags: ["Api_Delete"]
+        }
+      }
+    )
+    // *************** No DB ***************
+    .delete(
+      "/api/v1/Delete_User_NoDB/:UserID",
+      ({
+        controllerMain_Test2,
+        params
+      }: {
+        controllerMain_Test2: classTest2;
+        params: { UserID: string };
+      }) => controllerMain_Test2.Delete_User_NoDB(params.UserID),
+      {
+        detail: {
+          tags: ["Api_Delete"]
+        }
+      }
+    );
+};
