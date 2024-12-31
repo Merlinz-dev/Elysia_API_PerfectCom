@@ -1,10 +1,14 @@
 # Elysia with Bun runtime
 
-## Getting Started
+## Getting Started via MacOS
 To get started , Please install bun (service) :
 ```bash
-macos(HomeBrew): brew install oven-sh/bun/bun
-window os : powershell -c "irm bun.sh/install.ps1|iex"
+brew install oven-sh/bun/bun
+```
+## Getting Started via WindowOS
+To get started , Please install bun (service) :
+```bash
+powershell -c "irm bun.sh/install.ps1|iex"
 ```
 ## Prepare
 To prepare project , Please install node_modules :
