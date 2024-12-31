@@ -26,5 +26,21 @@ export const MainRoutes_GET = (app: Elysia) => {
           tags: ["Api_Get"]
         }
       }
+    )
+    //  *************** No DB ***************
+    .get(
+      "/api/v1/GetUser_NoDB/:UserID",
+      ({
+        controllerMain_Test2,
+        params
+      }: {
+        controllerMain_Test2: classTest2;
+        params: { UserID: string };
+      }) => controllerMain_Test2.GetUser_NoDB(params.UserID),
+      {
+        detail: {
+          tags: ["Api_Get"]
+        }
+      }
     );
 };
