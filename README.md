@@ -23,7 +23,7 @@ bun run dev
 
 Open http://localhost:5000/swagger with your browser to see project document.
 
-## Testing
+## Testing via bun test
 To test api :
 ```bash
 bun test
