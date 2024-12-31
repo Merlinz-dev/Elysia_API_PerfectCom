@@ -1,3 +1,4 @@
+import { t } from "elysia";
 import { data, dataUser } from "../DataType";
 import { supabase } from "../config/config";
 import fs from "fs";
@@ -30,16 +31,6 @@ export class classTest1 {
 export class classTest2 {
   // *************** No DB ***************
   private userDatabase: Map<string, dataUser> = new Map();
-  private userDetailsDatabase: Map<
-    string,
-    {
-      id: string;
-      FirstName: string;
-      LastName: string;
-      PhoneNumber: string;
-      BirthDate: string;
-    }
-  > = new Map();
 
   async GetUser_NoDB(UserID: string) {
     try {
@@ -60,16 +51,6 @@ export class classTest2 {
   async CreateUser_NoDB(_Data: dataUser) {
     try {
       const userDetailID = Math.random().toString(36).substr(2, 9);
-
-      const userDetail = {
-        id: userDetailID,
-        FirstName: _Data.FirstName,
-        LastName: _Data.LastName,
-        PhoneNumber: _Data.PhoneNumber,
-        BirthDate: _Data.BirthDate
-      };
-
-      this.userDetailsDatabase.set(userDetailID, userDetail);
 
       const user = {
         UserName: _Data.UserName,
@@ -97,6 +78,29 @@ export class classTest2 {
     }
   }
 
+  async Update_UserDetails_NoDB(_Data: dataUser) {
+    try {
+      const user = this.userDatabase.get(_Data.UserID);
+
+      if (!user) {
+        return { status: 404, message: "User not found" };
+      }
+
+      user.FirstName = _Data.FirstName;
+      user.LastName = _Data.LastName;
+      user.PhoneNumber = _Data.PhoneNumber;
+      user.BirthDate = _Data.BirthDate;
+
+      return {
+        status: 200,
+        message: `User ${user.UserName} updated successfully`
+      };
+    } catch (error) {
+      console.error("Error updating user:", error);
+      return { status: 500, message: "Internal server error" };
+    }
+  }
+
   // *************** Supabase ***************
   async GetUser(UserID: string) {
     try {
@@ -119,13 +123,14 @@ export class classTest2 {
         .eq("UserID", UserID)
         .single();
 
-      if (error) {
-        throw error;
-      }
-
       if (!data) {
         console.log("No data found for UserID:", UserID);
         return { status: 404, message: "User not found" };
+      }
+
+      if (error) {
+        console.error("Error retrieving user:", error);
+        return { status: 500, message: "Internal server error" };
       }
 
       return data;
@@ -185,6 +190,45 @@ export class classTest2 {
       return data;
     } catch (error) {
       console.error("Error creating user:", error);
+      return { status: 500, message: "Internal server error" };
+    }
+  }
+  async Update_UserDetails(_Data: dataUser) {
+    try {
+      const { data, error } = await supabase
+        .from("user_details_view")
+        .select("UserDetail_ID")
+        .eq("UserID", _Data.UserID);
+
+      if (error) {
+        console.error("Error retrieving user:", error);
+        return { status: 500, message: "Internal server error" };
+      }
+      const UserDetail_ID = data[0].UserDetail_ID;
+      if (UserDetail_ID) {
+        const { data, error } = await supabase
+          .from("UserDetails")
+          .update({
+            FirstName: _Data.FirstName,
+            LastName: _Data.LastName,
+            PhoneNumber: _Data.PhoneNumber,
+            BirthDate: _Data.BirthDate
+          })
+          .eq("id", UserDetail_ID)
+          .select("id, FirstName, LastName, PhoneNumber, BirthDate");
+
+        if (error) {
+          console.error("Error updating user:", error);
+          return { status: 500, message: "Internal server error" };
+        }
+
+        return {
+          status: 200,
+          message: ` updated successfully`
+        };
+      }
+    } catch (error) {
+      console.error("Error updating user:", error);
       return { status: 500, message: "Internal server error" };
     }
   }

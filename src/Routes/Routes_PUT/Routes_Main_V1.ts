@@ -1,7 +1,7 @@
 import { Elysia } from "elysia";
 import { jwt } from '@elysiajs/jwt'
-import { classMST, classEMS, classAuth } from "../../controller/controllerMain";
-import { data, dataAuth } from "../../DataType";
+import { classTest2 } from "../../controller/controllerMain";
+import { data, dataUser  } from "../../DataType";
 
 export const MainRoutes_PUT = (app: Elysia) => {
     app.use(jwt({
@@ -9,31 +9,73 @@ export const MainRoutes_PUT = (app: Elysia) => {
         secret: Bun.env['TOKEN_SECRET'] || 'secret',
         exp: '2h'
     }))
-        .get('/profile', async ({ controllerMain_EMS, myJWTNamespace, set, cookie: { auth } }: { controllerMain_EMS: classEMS, body: dataAuth, myJWTNamespace: any, set: any, cookie: { auth: { value: string } } }) => {
-            const checkAuth = await myJWTNamespace.verify(auth.value)
-            if (!checkAuth) {
-                set.status = 401
-                return 'Unauthorized'
+    .put('/api/v1/Update_UserDetails', async ({ controllerMain_Test2, body }: { controllerMain_Test2: classTest2, body: dataUser }) => {
+        const result = await controllerMain_Test2.Update_UserDetails(body);
+        return result;
+    }, {
+        detail: {
+            tags: ['Api_Post'],
+            requestBody: {
+                description: "Example body for Update_UserDetails",
+                content: {
+                    "application/json": {
+                        schema: {
+                            type: "object",
+                            properties: {
+                                UserID: {type: "string"},
+                                FirstName : {type: "string"},
+                                LastName : {type: "string"},
+                                PhoneNumber : {type: "string"},
+                                BirthDate : {type: "string"},
+                            },
+                            required: ["UserID","FirstName","LastName","PhoneNumber","BirthDate"],
+                            example: {
+                                UserID: "Test",
+                                FirstName: "Test",
+                                LastName: "Test",
+                                PhoneNumber: "123456789",
+                                BirthDate: "2000-01-01"
+                            }
+                        },
+                    }
+                }
             }
-            if(checkAuth.Center === 'AM-System'){
-                const Authdata: dataAuth = {
-                    UserID: checkAuth.Employee_ID,
-                    Password: '',
-                };
-                const profile = await controllerMain_EMS.GetEmployee(Authdata);
-                return `Hello ${profile[0].Employee_NameEN}`
-            }else {
-                set.status = 401
-                return 'No Permission'
+        },
+        type: 'json',
+    })
+     //  *************** No DB ***************
+    .put('/api/v1/Update_UserDetails_NoDB', async ({ controllerMain_Test2, body }: { controllerMain_Test2: classTest2, body: dataUser }) => {
+        const result = await controllerMain_Test2.Update_UserDetails_NoDB(body);
+        return result;
+    }, {
+        detail: {
+            tags: ['Api_Post'],
+            requestBody: {
+                description: "Example body for Update_UserDetails_NoDB",
+                content: {
+                    "application/json": {
+                        schema: {
+                            type: "object",
+                            properties: {
+                                UserID: {type: "string"},
+                                FirstName : {type: "string"},
+                                LastName : {type: "string"},
+                                PhoneNumber : {type: "string"},
+                                BirthDate : {type: "string"},
+                            },
+                            required: ["UserID","FirstName","LastName","PhoneNumber","BirthDate"],
+                            example: {
+                                UserID: "Test",
+                                FirstName: "Test2",
+                                LastName: "Test2",
+                                PhoneNumber: "123456789",
+                                BirthDate: "2000-01-01"
+                            }
+                        },
+                    }
+                }
             }
-        }, {
-            detail: {
-                tags: ['Auth'],
-            },
-            type: 'json',
-        })
-        // .get('/Test_AMD_Oracle', async ({ controllerMain_AMD_ORACLE }: { controllerMain_AMD_ORACLE: classAMD_ORACLE}) => {
-        //     const result = await controllerMain_AMD_ORACLE.GetTest_AMD();
-        //     return result;
-        // })
+        },
+        type: 'json',
+    })
 }

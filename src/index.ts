@@ -20,7 +20,7 @@ async function main() {
     // FIXME: Port 5000 || 3000
     MainRoutes_GET(app);
     MainRoutes_POST(app);
-    // MainRoutes_PUT(app);
+    MainRoutes_PUT(app);
     // MainRoutes_DELETE(app);
     app
       .use(
