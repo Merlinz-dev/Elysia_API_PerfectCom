@@ -1,4 +1,4 @@
-# Elysia with Bun runtime
+# Elysia API with Bun runtime
 
 ## Getting Started via MacOS
 To get started , Please install bun (service) :
